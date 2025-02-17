@@ -1,14 +1,16 @@
-/// A type representing a source element, a target element, or both a source and a target element.
-///
-/// This type represents an inclusive OR relation:
-/// Either a source element is available, or a target element is available, or both are available.
-/// `Delta` behaves similar to `Option`, but instead of representing 0 or 1 elements, it represents 1 or 2 elements.
-///
-/// The source and target are described as the two sides of a delta.
-/// Both sides are accessible via optional `source` and `target` methods.
-/// Convenient methods like `resolve` and `merge` also provide access to the elements.
-///
-/// Transform a `Delta` value to a different `Delta` value using `map`, `map_any`, or `map_all`.
+//! A type representing a source element, a target element, or both a source and a target element.
+//!
+//! This type represents an inclusive OR relation:
+//! Either a source element is available, or a target element is available, or both are available.
+//! `Delta` behaves similar to `Option`, but instead of representing 0 or 1 elements, it represents 1 or 2 elements.
+//!
+//! The source and target are described as the two sides of a delta.
+//! Both sides are accessible via optional `source` and `target` methods.
+//! Convenient methods like `resolve` and `merge` also provide access to the elements.
+//!
+//! Transform a `Delta` value to a different `Delta` value using `map`, `map_any`, or `map_all`.
+
+/// The `Delta` type. See the module level documentation for more.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Delta<T> {
     /// A source element.
@@ -33,7 +35,7 @@ impl<T> Delta<T> {
 
     /// Creates a target delta if `source` is `None`; otherwise, creates a transition delta.
     ///
-    /// ### Examples
+    /// # Examples
     ///
     /// ```
     /// # use lt_delta::Delta;
@@ -49,7 +51,7 @@ impl<T> Delta<T> {
 
     /// Creates a source delta if `target` is `None`; otherwise, creates a transition delta.
     ///
-    /// ### Examples
+    /// # Examples
     ///
     /// ```
     /// # use lt_delta::Delta;
@@ -70,7 +72,7 @@ impl<T> Delta<T> {
     /// - Else, if the target is non-`None`, creates a target delta.
     /// - Otherwise, returns `None`.
     ///
-    /// ### Examples
+    /// # Examples
     ///
     /// ```
     /// # use lt_delta::Delta;
@@ -87,23 +89,21 @@ impl<T> Delta<T> {
             (None, None) => None,
         }
     }
-}
 
-impl<T> Delta<T> {
     /// The source element, if available; otherwise, `None`.
     ///
-    /// ### Examples
+    /// # Examples
     ///
     /// ```
     /// # use lt_delta::Delta;
-    /// let d1 = Delta::Source(5);
-    /// assert_eq!(d1.source(), Some(&5));
+    /// let delta = Delta::Source(5);
+    /// assert_eq!(delta.source(), Some(&5));
     ///
-    /// let d2 = Delta::Target(5);
-    /// assert_eq!(d2.source(), None);
+    /// let delta = Delta::Target(5);
+    /// assert_eq!(delta.source(), None);
     ///
-    /// let d3 = Delta::Transition(3, 5);
-    /// assert_eq!(d3.source(), Some(&3));
+    /// let delta = Delta::Transition(3, 5);
+    /// assert_eq!(delta.source(), Some(&3));
     /// ```
     pub fn source(&self) -> Option<&T> {
         match self {
@@ -115,18 +115,18 @@ impl<T> Delta<T> {
 
     /// The target element, if available; otherwise, `None`.
     ///
-    /// ### Examples
+    /// # Examples
     ///
     /// ```
     /// # use lt_delta::Delta;
-    /// let d1 = Delta::Source(5);
-    /// assert_eq!(d1.target(), None);
+    /// let delta = Delta::Source(5);
+    /// assert_eq!(delta.target(), None);
     ///
-    /// let d2 = Delta::Target(5);
-    /// assert_eq!(d2.target(), Some(&5));
+    /// let delta = Delta::Target(5);
+    /// assert_eq!(delta.target(), Some(&5));
     ///
-    /// let d3 = Delta::Transition(3, 5);
-    /// assert_eq!(d3.target(), Some(&5));
+    /// let delta = Delta::Transition(3, 5);
+    /// assert_eq!(delta.target(), Some(&5));
     /// ```
     pub fn target(&self) -> Option<&T> {
         match self {
@@ -138,20 +138,20 @@ impl<T> Delta<T> {
 
     /// Returns a delta containing the results of mapping the given closure over the delta’s elements.
     ///
-    /// ### Examples
+    /// # Examples
     ///
     /// ```
     /// # use lt_delta::Delta;
-    /// let d1 = Delta::Source(3);
-    /// assert_eq!(d1.map(|x| x + 20), Delta::Source(23));
+    /// let delta = Delta::Source(3);
+    /// assert_eq!(delta.map(|x| x + 20), Delta::Source(23));
     ///
-    /// let d2 = Delta::Target(5);
-    /// assert_eq!(d2.map(|x| x + 20), Delta::Target(25));
+    /// let delta = Delta::Target(5);
+    /// assert_eq!(delta.map(|x| x + 20), Delta::Target(25));
     ///
-    /// let d3 = Delta::Transition(3, 5);
-    /// assert_eq!(d3.map(|x| x + 20), Delta::Transition(23, 25));
+    /// let delta = Delta::Transition(3, 5);
+    /// assert_eq!(delta.map(|x| x + 20), Delta::Transition(23, 25));
     /// ```
-    pub fn map<R, F: FnMut(T) -> R>(self, mut transform: F) -> Delta<R> {
+    pub fn map<U, F: FnMut(T) -> U>(self, mut transform: F) -> Delta<U> {
         match self {
             Delta::Source(source) => Delta::Source(transform(source)),
             Delta::Target(target) => Delta::Target(transform(target)),
@@ -163,37 +163,37 @@ impl<T> Delta<T> {
 
     /// Returns a delta containing the results of mapping the given closure over the delta’s elements, or `None`, if the closure returns `None` for all elements.
     ///
-    /// ### Examples
+    /// # Examples
     ///
     /// ```
     /// # use lt_delta::Delta;
-    /// let d1 = Delta::Source(3);
-    /// assert_eq!(d1.map_any(|x| Some(x + 20)), Some(Delta::Source(23)));
-    /// assert_eq!(d1.map_any(|_| None::<i32>), None);
+    /// let delta = Delta::Source(3);
+    /// assert_eq!(delta.map_any(|x| Some(x + 20)), Some(Delta::Source(23)));
+    /// assert_eq!(delta.map_any(|_| None::<i32>), None);
     ///
-    /// let d2 = Delta::Target(5);
-    /// assert_eq!(d2.map_any(|x| Some(x + 20)), Some(Delta::Target(25)));
-    /// assert_eq!(d2.map_any(|_| None::<i32>), None);
+    /// let delta = Delta::Target(5);
+    /// assert_eq!(delta.map_any(|x| Some(x + 20)), Some(Delta::Target(25)));
+    /// assert_eq!(delta.map_any(|_| None::<i32>), None);
     ///
-    /// let d3 = Delta::Transition(3, 5);
+    /// let delta = Delta::Transition(3, 5);
     /// assert_eq!(
-    ///     d3.map_any(|x| if x >= 2 { Some(x + 20) } else { None }),
+    ///     delta.map_any(|x| if x >= 2 { Some(x + 20) } else { None }),
     ///     Some(Delta::Transition(23, 25))
     /// );
     /// assert_eq!(
-    ///     d3.map_any(|x| if x <= 4 { Some(x + 20) } else { None }),
+    ///     delta.map_any(|x| if x <= 4 { Some(x + 20) } else { None }),
     ///     Some(Delta::Source(23))
     /// );
     /// assert_eq!(
-    ///     d3.map_any(|x| if x >= 4 { Some(x + 20) } else { None }),
+    ///     delta.map_any(|x| if x >= 4 { Some(x + 20) } else { None }),
     ///     Some(Delta::Target(25))
     /// );
     /// assert_eq!(
-    ///     d3.map_any(|x| if x >= 6 { Some(x + 20) } else { None }),
+    ///     delta.map_any(|x| if x >= 6 { Some(x + 20) } else { None }),
     ///     None
     /// );
     /// ```
-    pub fn map_any<R, F: FnMut(T) -> Option<R>>(self, mut transform: F) -> Option<Delta<R>> {
+    pub fn map_any<U, F: FnMut(T) -> Option<U>>(self, mut transform: F) -> Option<Delta<U>> {
         match self {
             Delta::Source(source) => transform(source).map(Delta::Source),
             Delta::Target(target) => transform(target).map(Delta::Target),
@@ -215,24 +215,24 @@ impl<T> Delta<T> {
 
     /// Returns a delta containing the results of mapping the given closure over the delta’s elements, or `None`, if the closure returns `None` for any element.
     ///
-    /// ### Examples
+    /// # Examples
     ///
     /// ```
     /// # use lt_delta::Delta;
-    /// let d1 = Delta::Source(3);
-    /// assert_eq!(d1.map_all(|x| Some(x + 20)), Some(Delta::Source(23)));
-    /// assert_eq!(d1.map_all(|_| None::<i32>), None);
+    /// let delta = Delta::Source(3);
+    /// assert_eq!(delta.map_all(|x| Some(x + 20)), Some(Delta::Source(23)));
+    /// assert_eq!(delta.map_all(|_| None::<i32>), None);
     ///
-    /// let d2 = Delta::Target(5);
-    /// assert_eq!(d2.map_all(|x| Some(x + 20)), Some(Delta::Target(25)));
-    /// assert_eq!(d2.map_all(|_| None::<i32>), None);
+    /// let delta = Delta::Target(5);
+    /// assert_eq!(delta.map_all(|x| Some(x + 20)), Some(Delta::Target(25)));
+    /// assert_eq!(delta.map_all(|_| None::<i32>), None);
     ///
-    /// let d3 = Delta::Transition(3, 5);
-    /// assert_eq!(d3.map_all(|x| if x >= 2 { Some(x + 20) } else { None }), Some(Delta::Transition(23, 25)));
-    /// assert_eq!(d3.map_all(|x| if x <= 4 { Some(x + 20) } else { None }), None);
-    /// assert_eq!(d3.map_all(|x| if x >= 4 { Some(x + 20) } else { None }), None);
-    /// assert_eq!(d3.map_all(|x| if x >= 6 { Some(x + 20) } else { None }), None);
-    pub fn map_all<R, F: FnMut(T) -> Option<R>>(self, mut transform: F) -> Option<Delta<R>> {
+    /// let delta = Delta::Transition(3, 5);
+    /// assert_eq!(delta.map_all(|x| if x >= 2 { Some(x + 20) } else { None }), Some(Delta::Transition(23, 25)));
+    /// assert_eq!(delta.map_all(|x| if x <= 4 { Some(x + 20) } else { None }), None);
+    /// assert_eq!(delta.map_all(|x| if x >= 4 { Some(x + 20) } else { None }), None);
+    /// assert_eq!(delta.map_all(|x| if x >= 6 { Some(x + 20) } else { None }), None);
+    pub fn map_all<U, F: FnMut(T) -> Option<U>>(self, mut transform: F) -> Option<Delta<U>> {
         match self {
             Delta::Source(source) => transform(source).map(Delta::Source),
             Delta::Target(target) => transform(target).map(Delta::Target),
@@ -252,21 +252,21 @@ impl<T> Delta<T> {
     ///
     /// If the favored element is not available, the other element is returned.
     ///
-    /// ### Examples
+    /// # Examples
     ///
     /// ```
     /// # use lt_delta::{Delta, Side};
-    /// let d1 = Delta::Source(3);
-    /// assert_eq!(d1.resolve(Side::Source), 3);
-    /// assert_eq!(d1.resolve(Side::Target), 3);
+    /// let delta = Delta::Source(3);
+    /// assert_eq!(delta.resolve(Side::Source), 3);
+    /// assert_eq!(delta.resolve(Side::Target), 3);
     ///
-    /// let d2 = Delta::Target(5);
-    /// assert_eq!(d2.resolve(Side::Source), 5);
-    /// assert_eq!(d2.resolve(Side::Target), 5);
+    /// let delta = Delta::Target(5);
+    /// assert_eq!(delta.resolve(Side::Source), 5);
+    /// assert_eq!(delta.resolve(Side::Target), 5);
     ///
-    /// let d3 = Delta::Transition(3, 5);
-    /// assert_eq!(d3.resolve(Side::Source), 3);
-    /// assert_eq!(d3.resolve(Side::Target), 5);
+    /// let delta = Delta::Transition(3, 5);
+    /// assert_eq!(delta.resolve(Side::Source), 3);
+    /// assert_eq!(delta.resolve(Side::Target), 5);
     /// ```
     pub fn resolve(self, side: Side) -> T {
         match side {
@@ -287,7 +287,7 @@ impl<T> Delta<T> {
     ///
     /// Returns the source element, if available; otherwise, returns the target element.
     ///
-    /// ### Examples
+    /// # Examples
     ///
     /// ```
     /// # use lt_delta::Delta;
@@ -303,7 +303,7 @@ impl<T> Delta<T> {
     ///
     /// Returns the target element, if available; otherwise, returns the source element.
     ///
-    /// ### Examples
+    /// # Examples
     ///
     /// ```
     /// # use lt_delta::Delta;
@@ -333,48 +333,204 @@ impl<T> Delta<T> {
         }
     }
 
+    /// Returns a transition delta where both the source and target share the same element.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use lt_delta::Delta;
+    /// let delta = Delta::identity(5);
+    /// ```
+    pub fn identity(element: T) -> Self
+    where
+        T: Copy,
+    {
+        Delta::Transition(element, element)
+    }
+
     /// Returns whether the delta is of the transition case and a predicate is true given the source and target elements.
     ///
     /// A source delta or target delta always returns `false` without invoking `predicate`.
     ///
     /// - Parameter predicate: The return value of this function is returned by `isIdentity(by:)`.
     ///
-    /// ### Examples
+    /// # Examples
     ///
     /// ```
     /// # use lt_delta::Delta;
     /// let delta = Delta::identity(5);
-    /// assert!(delta.is_identity(|s, t| s == t));
-    /// ```
+    /// assert!(delta.is_identity_by(|s, t| s == t));
     ///
-    /// ```
-    /// # use lt_delta::Delta;
     /// let delta = Delta::Transition(-5, 5);
-    /// assert!(delta.is_identity(|s, t| i32::abs(*s) == i32::abs(*t)));
-    /// ```
+    /// assert!(delta.is_identity_by(|s, t| i32::abs(*s) == i32::abs(*t)));
     ///
-    /// ```
-    /// # use lt_delta::Delta;
     /// let delta = Delta::Source(5);
-    /// assert!(!delta.is_identity(|s, t| s == t));
+    /// assert!(!delta.is_identity_by(|s, t| s == t));
     /// ```
-    pub fn is_identity<F: FnOnce(&T, &T) -> bool>(self, predicate: F) -> bool {
+    pub fn is_identity_by<F: FnOnce(&T, &T) -> bool>(self, predicate: F) -> bool {
         match self {
             Delta::Source(_) => false,
             Delta::Target(_) => false,
             Delta::Transition(source, target) => predicate(&source, &target),
         }
     }
-}
 
-impl<T: Copy> Delta<T> {
-    /// Returns a transition delta where both the source and target share the same element.
-    pub fn identity(element: T) -> Self {
-        Delta::Transition(element, element)
+    /// Returns whether the delta is of the transition case and the source and target elements are equal.
+    ///
+    /// A source delta or target delta always returns `false`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use lt_delta::Delta;
+    /// assert!(!Delta::Source(3).is_identity());
+    /// assert!(!Delta::Target(5).is_identity());
+    /// assert!(Delta::identity(5).is_identity());
+    /// assert!(Delta::Transition(5, 5).is_identity());
+    /// assert!(!Delta::Transition(3, 5).is_identity());
+    pub fn is_identity(self) -> bool
+    where
+        T: PartialEq,
+    {
+        self.is_identity_by(|s, t| s == t)
+    }
+
+    /// Converts from `&Delta<T>` to `Delta<&T>`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use lt_delta::Delta;
+    /// let text: Delta<String> = Delta::Source("Hello!".to_string());
+    /// let text_length: Delta<usize> = text.as_ref().map(|s| s.len());
+    /// println!("still can print text: {text:?}");
+    /// ```
+    pub const fn as_ref(&self) -> Delta<&T> {
+        match *self {
+            Delta::Source(ref source) => Delta::Source(source),
+            Delta::Target(ref target) => Delta::Target(target),
+            Delta::Transition(ref source, ref target) => Delta::Transition(source, target),
+        }
+    }
+
+    /// Converts from `&mut Delta<T>` to `Delta<&mut T>`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use lt_delta::Delta;
+    /// let mut x = Delta::Source(3);
+    /// match x.as_mut() {
+    ///     Delta::Source(v) => *v = 23,
+    ///    _ => {},
+    /// }
+    /// assert_eq!(x, Delta::Source(23));
+    /// ```
+    pub const fn as_mut(&mut self) -> Delta<&mut T> {
+        match *self {
+            Delta::Source(ref mut source) => Delta::Source(source),
+            Delta::Target(ref mut target) => Delta::Target(target),
+            Delta::Transition(ref mut source, ref mut target) => Delta::Transition(source, target),
+        }
+    }
+
+    /// Converts from `Delta<T>` (or `&Delta<T>`) to `Delta<&T::Target>`.
+    ///
+    /// Leaves the original delta in place, creating a new one with a reference to the original one, additionally coercing the contents via `Deref`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use lt_delta::Delta;
+    /// let x = Delta::Source("hey".to_owned());
+    /// assert_eq!(x.as_deref(), Delta::Source("hey"));
+    /// ```
+    pub fn as_deref(&self) -> Delta<&T::Target>
+    where
+        T: std::ops::Deref,
+    {
+        self.as_ref().map(|x| x.deref())
+    }
+
+    /// Converts from `Delta<T>` (or `&mut Delta<T>`) to `Delta<&mut T::Target>`.
+    ///
+    /// Leaves the original delta in place, creating a new one containing a mutable reference to the inner type’s `Deref::Target` type.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use lt_delta::Delta;
+    /// let mut x = Delta::Source("hey".to_owned());
+    /// assert_eq!(x.as_deref_mut().map(|x| {
+    ///     x.make_ascii_uppercase();
+    ///     x
+    /// }), Delta::Source("HEY".to_owned().as_mut_str()));
+    /// ```
+    pub fn as_deref_mut(&mut self) -> Delta<&mut T::Target>
+    where
+        T: std::ops::DerefMut,
+    {
+        self.as_mut().map(|x| x.deref_mut())
     }
 }
 
+impl<T> Delta<&mut T> {
+    /// Maps a `Delta<&mut T>` to a `Delta<T>` by copying the contents of the delta.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use lt_delta::Delta;
+    /// let mut x = 5;
+    /// let delta_x = Delta::Target(&mut x);
+    /// assert_eq!(delta_x, Delta::Target(&mut 5));
+    /// let copied = delta_x.copied();
+    /// assert_eq!(copied, Delta::Target(5));
+    /// ```
+    pub const fn copied(self) -> Delta<T>
+    where
+        T: Copy,
+    {
+        match self {
+            Delta::Source(&mut source) => Delta::Source(source),
+            Delta::Target(&mut target) => Delta::Target(target),
+            Delta::Transition(&mut source, &mut target) => Delta::Transition(source, target),
+        }
+    }
+
+    /// Maps a `Delta<&mut T>` to a `Delta<T>` by cloning the contents of the delta.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use lt_delta::Delta;
+    /// let mut x = 5;
+    /// let delta_x = Delta::Target(&mut x);
+    /// assert_eq!(delta_x, Delta::Target(&mut 5));
+    /// let cloned = delta_x.cloned();
+    /// assert_eq!(cloned, Delta::Target(5));
+    /// ```
+    pub fn cloned(self) -> Delta<T>
+    where
+        T: Clone,
+    {
+        match self {
+            Delta::Source(source) => Delta::Source(source.clone()),
+            Delta::Target(target) => Delta::Target(target.clone()),
+            Delta::Transition(source, target) => Delta::Transition(source.clone(), target.clone()),
+        }
+    }
+}
+
+/// A description of the two sides of a delta.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Side {
+    /// The source side of a delta.
+    ///
+    /// This side is perferred when accessing the first element of a delta.
     Source,
+    /// The target side of a delta.
+    ///
+    /// This side is perferred when accessing the last element of a delta.
     Target,
 }
