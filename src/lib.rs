@@ -228,10 +228,22 @@ impl<T> Delta<T> {
     /// assert_eq!(delta.map_all(|_| None::<i32>), None);
     ///
     /// let delta = Delta::Transition(3, 5);
-    /// assert_eq!(delta.map_all(|x| if x >= 2 { Some(x + 20) } else { None }), Some(Delta::Transition(23, 25)));
-    /// assert_eq!(delta.map_all(|x| if x <= 4 { Some(x + 20) } else { None }), None);
-    /// assert_eq!(delta.map_all(|x| if x >= 4 { Some(x + 20) } else { None }), None);
-    /// assert_eq!(delta.map_all(|x| if x >= 6 { Some(x + 20) } else { None }), None);
+    /// assert_eq!(
+    ///     delta.map_all(|x| if x >= 2 { Some(x + 20) } else { None }),
+    ///     Some(Delta::Transition(23, 25))
+    /// );
+    /// assert_eq!(
+    ///     delta.map_all(|x| if x <= 4 { Some(x + 20) } else { None }),
+    ///     None
+    /// );
+    /// assert_eq!(
+    ///     delta.map_all(|x| if x >= 4 { Some(x + 20) } else { None }),
+    ///     None
+    /// );
+    /// assert_eq!(
+    ///     delta.map_all(|x| if x >= 6 { Some(x + 20) } else { None }),
+    ///     None
+    /// );
     pub fn map_all<U, F: FnMut(T) -> Option<U>>(self, mut transform: F) -> Option<Delta<U>> {
         match self {
             Delta::Source(source) => transform(source).map(Delta::Source),
@@ -317,6 +329,10 @@ impl<T> Delta<T> {
 
     /// Resolves the delta to a single element, coalescing the source and target elements in the transition case.
     ///
+    /// # Arguments
+    ///
+    /// * `coalesce` – A closure that takes the source and target elements and combines them into a single element.
+    ///
     /// # Examples
     ///
     /// ```
@@ -340,6 +356,8 @@ impl<T> Delta<T> {
     /// ```
     /// # use lt_delta::Delta;
     /// let delta = Delta::identity(5);
+    /// assert_eq!(delta, Delta::Transition(5, 5));
+    /// assert!(delta.is_identity());
     /// ```
     pub fn identity(element: T) -> Self
     where
@@ -352,7 +370,9 @@ impl<T> Delta<T> {
     ///
     /// A source delta or target delta always returns `false` without invoking `predicate`.
     ///
-    /// - Parameter predicate: The return value of this function is returned by `isIdentity(by:)`.
+    /// # Arguments
+    ///
+    /// * `predicate`` – The return value of this function is returned by `is_identity_by`.
     ///
     /// # Examples
     ///
